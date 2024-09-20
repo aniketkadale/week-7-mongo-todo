@@ -1,4 +1,4 @@
-const JWT_SECRET = "randomsecret";
+const JWT_SECRET = process.env.JWT_SECRET;
 const jwt = require("jsonwebtoken");
 
 function authMiddleware(req, res, next) {

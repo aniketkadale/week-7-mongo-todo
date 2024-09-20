@@ -1,22 +1,37 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const { UserModel, TodoModel } = require("./db");
-const {authMiddleware, JWT_SECRET} = require('./auth');
-const {z}  = require('zod');
+const { authMiddleware, JWT_SECRET } = require("./auth");
+const { z } = require("zod");
 
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   const reqBody = z.object({
     email: z.string().min(3).max(50).email(),
-    password: z.string().min(6).refine((password) => /[A-Z]/.test(password), {message: "Required atleast one uppercase character"}).refine((password) => /[a-z]/.test(password), {message: "Required atleast one lowercase character"}).refine((password) => /[0-9]/.test(password), {message: "Required atleast one number"}).refine((password) => /[!@#$%^&*]/.test(password), {message: "Required atleast one special character"}),
-    name: z.string().min(3).max(30)
+    password: z
+      .string()
+      .min(6)
+      .refine((password) => /[A-Z]/.test(password), {
+        message: "Required atleast one uppercase character",
+      })
+      .refine((password) => /[a-z]/.test(password), {
+        message: "Required atleast one lowercase character",
+      })
+      .refine((password) => /[0-9]/.test(password), {
+        message: "Required atleast one number",
+      })
+      .refine((password) => /[!@#$%^&*]/.test(password), {
+        message: "Required atleast one special character",
+      }),
+    name: z.string().min(3).max(30),
   });
 
   const parsedData = reqBody.safeParse(req.body);
-  if(!parsedData.success) {
+  if (!parsedData.success) {
     res.json({
       message: "Incorrect format",
       error: parsedData.error.issues[0].message,
@@ -35,7 +50,6 @@ app.post("/signup", async (req, res) => {
       password: hashedPassword,
       name: name,
     });
-
 
     // console.log(hashedPassword);
     await newUser.save();
@@ -56,25 +70,23 @@ app.post("/signin", async (req, res) => {
       email: email,
     });
 
-    if(!findUser) {
-      return res.status(403).json({message: "Invalid credentials"});
+    if (!findUser) {
+      return res.status(403).json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, findUser.password);
 
-    if(isPasswordValid) {
-      const token = jwt.sign({id: findUser._id.toString()}, JWT_SECRET) ;
-        res.json({token: token});
+    if (isPasswordValid) {
+      const token = jwt.sign({ id: findUser._id.toString() }, JWT_SECRET);
+      res.json({ token: token });
     } else {
       res.status(403).json({ message: "Invalid credentials" });
     }
-
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Error signing in user" });
   }
 });
-
 
 // These two routes will be authenticated
 app.post("/todo", authMiddleware, async (req, res) => {
