@@ -1,15 +1,13 @@
-const mongoose = require('mongoose');
+require("dotenv").config();
+const mongoose = require("mongoose");
 const ObjectId = mongoose.ObjectId;
-
-mongoose.connect(
-  "mongodb+srv://aniketkadale2001:ia5saLYToJyutzYM@cluster0.4fjbo.mongodb.net/mongo-todo"
-);
-
+const MONGO_URL = process.env.MONGO_URL;
+mongoose.connect(`${MONGO_URL}`);
 
 const UserSchema = mongoose.Schema({
   email: {
     type: String,
-    unique: true
+    unique: true,
   },
   password: String,
   name: String,
@@ -21,12 +19,10 @@ const TodoSchema = mongoose.Schema({
   userId: ObjectId,
 });
 
-const UserModel = mongoose.model('users', UserSchema);
+const UserModel = mongoose.model("users", UserSchema);
 const TodoModel = mongoose.model("todos", TodoSchema);
-
 
 module.exports = {
   UserModel,
   TodoModel,
 };
-
