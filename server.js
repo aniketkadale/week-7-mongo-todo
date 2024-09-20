@@ -125,8 +125,8 @@ app.get("/todos", authMiddleware, async (req, res) => {
   }
 });
 
-// update the status of the todo to done
 
+// update the status of the todo to "done"
 app.put("/todos/:id", authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
@@ -135,6 +135,10 @@ app.put("/todos/:id", authMiddleware, async (req, res) => {
     const todo = await TodoModel.findOne({ _id: todoId, userId });
     if (!todo) {
       return res.status(404).json({ message: "Todo not found" });
+    }
+
+    if(todo.done) {
+      return res.status(200).json({message: "Todo already marked as done"})
     }
 
     todo.done = true;
